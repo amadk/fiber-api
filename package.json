@@ -1,0 +1,28 @@
+{
+  "name": "fiber-api",
+  "version": "1.0.0",
+  "main": "sever.js",
+  "repository": "https://github.com/amadk/fiber-api.git",
+  "author": "Amad Khan",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "tests": "mocha tests"
+  },
+  "dependencies": {
+    "basic-auth": "^2.0.0",
+    "bcryptjs": "^2.4.3",
+    "body-parser": "^1.18.2",
+    "chai-http": "^3.0.0",
+    "dotenv": "^4.0.0",
+    "express": "^4.15.4",
+    "mysql": "^2.14.1",
+    "mysql2": "^1.4.2",
+    "request": "^2.83.0",
+    "sequelize": "^4.8.4"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1"
+  }
+}
