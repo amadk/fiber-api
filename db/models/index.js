@@ -12,22 +12,19 @@ const sequelize = new Sequelize(db, dbUser, dbPassword, {
   logging: false
 });
 
-// Any variable that starts with a capital letter is a model
 const Account = require('./accounts.js')(sequelize, Sequelize);
 const ConnectedAccount = require('./connected_accounts.js')(sequelize, Sequelize);
 
 const Balance = require('./balances.js')(sequelize, Sequelize);
 // const BalanceTransaction = require('./balance_transactions.js')(sequelize, Sequelize);
 
-const Customer = require('./customers.js')(sequelize, Sequelize);
 const Charge = require('./charges.js')(sequelize, Sequelize);
-const CustomerCardToken = require('./customer_card_tokens.js')(sequelize, Sequelize);
 
-// const Transfer = require('./transfers.js')(sequelize, Sequelize);
-// const Payout = require('./payouts.js')(sequelize, Sequelize);
+const Transfer = require('./transfers.js')(sequelize, Sequelize);
+const Payout = require('./payouts.js')(sequelize, Sequelize);
 
 const Card = require('./cards.js')(sequelize, Sequelize);
-// const BankAccountToken = require('./bank_account_tokens.js')(sequelize, Sequelize);
+const BankAccount = require('./bankAccounts.js')(sequelize, Sequelize);
 
 // -----------------------------------------------------Accounts-----------------------------------------------------------------------------------
 
@@ -57,7 +54,7 @@ Balance.belongsTo(Account, {
 
 // Product-ProductPhotos relationship:
 Account.hasMany(Card, {
-  foreignKey: 'account_id'
+  foreignKey: 'account_id',
 });
 
 Card.belongsTo(Account, {
@@ -65,72 +62,47 @@ Card.belongsTo(Account, {
 });
 
 // Product-ProductPhotos relationship:
-Account.hasMany(Customer, {
-  foreignKey: 'platform_id'
+Account.hasMany(BankAccount, {
+  foreignKey: 'account_id'
 });
 
-Customer.belongsTo(Account, {
-  foreignKey: 'platform_id'
+BankAccount.belongsTo(Account, {
+  foreignKey: 'account_id'
 });
-
-// Product-ProductPhotos relationship:
-Customer.hasMany(CustomerCardToken, {
-  foreignKey: 'customer_id'
-});
-
-CustomerCardToken.belongsTo(Customer, {
-  foreignKey: 'platform_id'
-});
-
 // -----------------------------------------------------Charges-----------------------------------------------------------------------------------
-
-// Product-ProductPhotos relationship:
-Card.hasMany(Charge, {
-  foreignKey: 'source'
-});
-
-Charge.belongsTo(Card, {
-  foreignKey: 'source'
-});
-
-// Product-ProductPhotos relationship:
-CustomerCardToken.hasMany(Charge, {
-  foreignKey: 'source'
-});
-
-Charge.belongsTo(CustomerCardToken, {
-  foreignKey: 'source'
-});
 
 // Product-ProductPhotos relationship:
 Account.hasMany(Charge, {
-  foreignKey: 'platform_id'
+  foreignKey: 'account_id'
 });
 
 Charge.belongsTo(Account, {
-  foreignKey: 'platform_id'
-});
-
-// Product-ProductPhotos relationship:
-Customer.hasMany(Charge, {
-  foreignKey: 'customer_id'
-});
-
-Charge.belongsTo(Customer, {
-  foreignKey: 'customer_id'
+  foreignKey: 'account_id'
 });
 
 // -----------------------------------------------------Charges-----------------------------------------------------------------------------------
 
 
-// Product-ProductSizes relationship:
-// Account.hasMany(BankAccountToken, {
-//   foreignKey: 'account_id'
-// });
+Account.belongsToMany(Account, {
+  through: Transfer,
+  as: 'sender',
+  foreignKey: 'receiver_id'
+});
 
-// BankAccountToken.belongsTo(Account, {
-//   foreignKey: 'account_id'
-// });
+Account.belongsToMany(Account, {
+  through: Transfer,
+  as: 'receiver',
+  foreignKey: 'sender_id'
+})
+
+// Product-ProductPhotos relationship:
+Account.hasMany(Payout, {
+  foreignKey: 'account_id'
+});
+
+Payout.belongsTo(Account, {
+  foreignKey: 'account_id'
+});
 
 
 // AppLinks join table:
@@ -146,19 +118,18 @@ Charge.belongsTo(Customer, {
 
 
 // Create missing tables, if any
-// sequelize.sync({force: true});
-sequelize.sync();
+sequelize.sync({force: true});
+// sequelize.sync();
 
 exports.Account = Account;
 exports.ConnectedAccount = ConnectedAccount;
 
 exports.Card = Card;
+exports.BankAccount = BankAccount;
 
 exports.Balance = Balance;
-exports.Customer = Customer;
-exports.CustomerCardToken = CustomerCardToken;
 exports.Charge = Charge;
-// exports.BankAccountToken = BankAccountToken;
-
+exports.Transfer = Transfer;
+exports.Payout = Payout;
 
 

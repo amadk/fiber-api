@@ -1,6 +1,7 @@
 var express = require('express');
 var accountController = require('../../db/controllers/accounts.js');
 var Account = require('../../db/models/index.js').Account;
+var ConnectedAccount = require('../../db/models/index.js').ConnectedAccount;
 
 var recipientRouter = express.Router();
 
@@ -8,14 +9,10 @@ var recipientRouter = express.Router();
 recipientRouter.route('/')
   .post(function(req, res, next) {
     var platform = req.account;
-    var recipientInformation = {
-      email: req.body.email,
-      entity_type: req.body.entity_type,
-      account_type: req.body.account_type,
-      country: req.body.country || 'UAE'
-    }
-    
+    var recipientInformation = Object.assign(req.body)
+
     platform.getConnectedAccount({where: recipientInformation}).then(recipients => {
+
       if (recipients[0]) {
         res.send({message: 'account already connected'});
       } else if (recipientInformation.account_type === 'standard') {
@@ -23,11 +20,27 @@ recipientRouter.route('/')
         res.send('connection invite sent')
       } else {
         accountController.create(recipientInformation, newRecipient => {
-          platform.addConnectedAccount(newRecipient).then(() => {
-            res.send('Account created successfully')
+          platform.addConnectedAccount(newRecipient).then(accountConnection => {
+            accountConnection[0][0].update({connection_type: 'platform-recipient'})
+            res.send(newRecipient)
           })
         })
       }
+    })
+  });
+
+// List all connected accounts
+recipientRouter.route('/')
+  .get((req, res) => {
+    var queryLimit = parseInt(req.query.limit) || 10
+    var platform = req.account;
+
+    platform.getConnectedAccount({limit: queryLimit}).then(recipients => {
+      
+      recipients = recipients.filter(recipient => {
+        return recipient.connected_accounts.connection_type === 'platform-recipient'
+      })
+      res.send(recipients)
     })
   });
 
@@ -48,15 +61,16 @@ recipientRouter.route('/:recipientId')
   
 
 // Update connected account
-accountRouter.route('/:recipientId')
+recipientRouter.route('/:recipientId')
   .post(function(req, res) {
     var platform = req.account;
     var recipientId = req.params.recipientId;
 
     platform.getConnectedAccount({where: {id: recipientId}}).then(accounts => {
-      if (accounts[0]) {
-        if (accounts[0].account_type === 'custom') {
-          Account.update(req.body, {where: {id: recipientId}}).then(updatedAccount => {
+      var recipient = accounts[0]
+      if (recipient) {
+        if (recipient.account_type === 'custom') {
+          recipient.update(req.body).then(updatedAccount => {
             res.send(updatedAccount);
           })
         } else {
@@ -71,16 +85,6 @@ accountRouter.route('/:recipientId')
     })
   });
 
-// List all connected accounts
-recipientRouter.route('/')
-  .get((req, res) => {
-    var queryLimit = parseInt(req.query.limit) || 10
-    var platform = req.account;
-
-    platform.getConnectedAccount({limit: queryLimit}).then(recipients => {
-      res.send(recipients)
-    })
-  });
 
 // Reject or flag account
 recipientRouter.route('/:recipientId/reject')

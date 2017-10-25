@@ -1,6 +1,6 @@
 var express = require('express');
 var chargeController = require('../../db/controllers/charges.js');
-var charge = require('../../db/models/index.js').charge;
+var Charge = require('../../db/models/index.js').Charge;
 
 var chargeRouter = express.Router();
 
@@ -11,27 +11,19 @@ chargeRouter.route('/')
     var platform = req.account;
     // var chargeData = generateTokenAndUploadtoVault(req.body);
     var chargeData = req.body;
-    chargeController.create(chargeData, charge => {
-      res.send(charge);  
-    })
-  });
 
-// Update charge
-chargeRouter.route('/:chargeId')
-  .post((req, res) => {
-    var platform = req.account;
-    // var chargeData = generateTokenAndUploadtoVault(req.body);
-    var chargeId = req.params.chargeId;
-
-    account.getcharges({where: {id: chargeId}}).then(charges => {
-      var charge = charges[0]
-      if (charge) {
-        res.send[charge]
+    platform.getCards({where: {id: chargeData.source}}).then(cards => {
+      var card = cards[0];
+      if (card) {
+        Charge.create(chargeData).then(charge => {
+          platform.addCharge(charge).then(account => {
+            res.send(charge);
+          })
+        })
       } else {
         res.send({
           error: {
-            type: 'not_found_error',
-            message: 'No charge found'
+            message: 'Source not found'
           }
         })
       }
@@ -42,12 +34,12 @@ chargeRouter.route('/:chargeId')
 chargeRouter.route('/')
   .get((req, res) => {
     var platform = req.account;
+    var queryLimit = parseInt(req.query.limit) || 10;
 
-    chargeController.findAll({where: {account_id: platform.id}}, charge => {
-      res.send(charge);
+    platform.getCharges({limit: queryLimit}).then(charges => {
+      res.send(charges)
     })
   });
-
 
 // Get charge with chargeId
 chargeRouter.route('/:chargeId')
@@ -55,8 +47,32 @@ chargeRouter.route('/:chargeId')
     var platform = req.account;
     var chargeId = req.params.chargeId
 
-    chargeController.find({where: {id: chargeId}}, charge => {
-      res.send(charge);
+    platform.getCharges({where: {id: chargeId}}).then(charges => {
+      res.send(charges[0])
+    })
+  });
+
+// Update charge
+chargeRouter.route('/:chargeId')
+  .post((req, res) => {
+    var platform = req.account;
+    // var chargeData = generateTokenAndUploadtoVault(req.body);
+    var chargeId = req.params.chargeId;
+
+    platform.getCharges({where: {id: chargeId}}).then(charges => {
+      var charge = charges[0]
+      if (charge) {
+        charge.update(req.body).then(newCharge => {
+          res.send(charge)          
+        })
+      } else {
+        res.send({
+          error: {
+            type: 'not_found_error',
+            message: 'No charge found'
+          }
+        })
+      }
     })
   });
 

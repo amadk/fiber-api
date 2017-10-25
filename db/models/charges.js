@@ -1,11 +1,17 @@
+var uuidv4 = require('uuid/v4');
+
 module.exports = function(sequelize, Sequelize) {
 
   var Charge = sequelize.define('charges', {
     id: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.UUID,
+      defaultValue: () => {
+        var arr = uuidv4().split('-');
+        arr.pop();
+        return 'ch_'+arr.join('');
+      },
       primaryKey: true,
       allowNull: false,
-      autoIncrement: true
     },
     amount: {
       type: Sequelize.STRING
@@ -29,6 +35,12 @@ module.exports = function(sequelize, Sequelize) {
       type: Sequelize.STRING
     },
     description: {
+      type: Sequelize.STRING
+    },
+    customer_id: {
+      type: Sequelize.STRING
+    },
+    source: {
       type: Sequelize.STRING
     },
   });

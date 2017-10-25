@@ -1,11 +1,17 @@
+var uuidv4 = require('uuid/v4');
+
 module.exports = function(sequelize, Sequelize) {
 
   var Account = sequelize.define('accounts', {
     id: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.UUID,
+      defaultValue: () => {
+        var arr = uuidv4().split('-');
+        arr.pop();
+        return 'acct_'+arr.join('');
+      },
       primaryKey: true,
       allowNull: false,
-      autoIncrement: true
     },
     // ----------------------------------------------------------- Account Type ------------------------------------------------------------------
     account_type:{
@@ -78,13 +84,6 @@ module.exports = function(sequelize, Sequelize) {
     tos_acceptance_ip: {
       type: Sequelize.STRING
     },
-    // ----------------------------------------------------------- API Keys ----------------------------------------------------------------------
-    publishable_live_api_key: {
-      type: Sequelize.STRING
-    },
-    publishable_test_api_key: {
-      type: Sequelize.STRING
-    },
     // ----------------------------------------------------------- Extra Information -------------------------------------------------------------
     display_name: {
       type: Sequelize.STRING
@@ -98,6 +97,41 @@ module.exports = function(sequelize, Sequelize) {
     payouts_enabled: {
       type: Sequelize.BOOLEAN
     },
+    default_payment_source: {
+      type: Sequelize.STRING
+    },
+    default_payout_destination: {
+      type: Sequelize.STRING
+    },
+    // ----------------------------------------------------------- API Keys -------------------------------------------------------------
+    pk_test_apikey: {
+      type: Sequelize.TEXT,
+      defaultValue: () => {
+        return 'pk_test_'+uuidv4().split('-').join('');
+      },
+      allowNull: false,
+    },
+    sk_test_apikey: {
+      type: Sequelize.TEXT,
+      defaultValue: () => {
+        return 'sk_test_'+uuidv4().split('-').join('');
+      },
+      allowNull: false,
+    },
+    pk_live_apikey: {
+      type: Sequelize.TEXT,
+      defaultValue: () => {
+        return 'pk_live_'+uuidv4().split('-').join('');
+      },
+      allowNull: false,
+    },
+    sk_live_apikey: {
+      type: Sequelize.TEXT,
+      defaultValue: () => {
+        return 'sk_live_'+uuidv4().split('-').join('');
+      },
+      allowNull: false,
+    }
   });
 
   return Account;

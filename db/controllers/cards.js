@@ -1,7 +1,7 @@
 const Card = require('../models/index.js').Card;
 
-Card.create = (props, callback) => {
-  Balance.build(props)
+exports.create = (props, callback) => {
+  Card.build(props)
   .save()
   .then(card => {
     callback(card);

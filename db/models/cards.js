@@ -1,11 +1,17 @@
+var uuidv4 = require('uuid/v4');
+
 module.exports = function(sequelize, Sequelize) {
 
-  var CardToken = sequelize.define('card_tokens', {
+  var Card = sequelize.define('cards', {
     id: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.UUID,
+      defaultValue: () => {
+        var arr = uuidv4().split('-');
+        arr.pop();
+        return 'card_'+arr.join('');
+      },
       primaryKey: true,
       allowNull: false,
-      autoIncrement: true
     },
     name: {
       type: Sequelize.STRING
@@ -17,10 +23,10 @@ module.exports = function(sequelize, Sequelize) {
       type: Sequelize.STRING
     },
     exp_month: {
-      type: Sequelize.STRING
+      type: Sequelize.INTEGER
     },
     exp_year: {
-      type: Sequelize.STRING
+      type: Sequelize.INTEGER
     },
     cvc_check: {
       type: Sequelize.STRING
@@ -54,8 +60,18 @@ module.exports = function(sequelize, Sequelize) {
     },
     address_zip_check: {
       type: Sequelize.STRING
-    }
+    },
+
+    number: {
+      type: Sequelize.STRING
+    },
+    name: {
+      type: Sequelize.STRING
+    },
+    cvc: {
+      type: Sequelize.INTEGER
+    },
   });
 
-  return CardToken;
+  return Card;
 };

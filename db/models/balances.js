@@ -1,11 +1,17 @@
+var uuidv4 = require('uuid/v4');
+
 module.exports = function(sequelize, Sequelize) {
 
   var Balance = sequelize.define('balances', {
     id: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.UUID,
+      defaultValue: () => {
+        var arr = uuidv4().split('-');
+        arr.pop();
+        return 'bal_'+arr.join('');
+      },
       primaryKey: true,
       allowNull: false,
-      autoIncrement: true
     },
     available_amount: {
       type: Sequelize.INTEGER,
